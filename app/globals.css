@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sat-bg:      #07080d;
+  --sat-surface: #0f1117;
+  --sat-border:  #1c2030;
+  --sat-muted:   #2a3050;
+  --sat-text:    #c8cfe8;
+  --sat-dim:     #5a6280;
+  --sat-accent:  #00e5a0;
+  --sat-accentD: #00b87d;
+  --sat-warn:    #f59e0b;
+  --sat-danger:  #ef4444;
+  --sat-info:    #3b82f6;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--sat-bg);
+  color: var(--sat-text);
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--sat-surface); }
+::-webkit-scrollbar-thumb { background: var(--sat-muted); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sat-accent); }
+
+/* ── Utility classes ─────────────────────────── */
+.sat-card {
+  background: var(--sat-surface);
+  border: 1px solid var(--sat-border);
+  border-radius: 8px;
+}
+
+.sat-input {
+  background: var(--sat-bg);
+  border: 1px solid var(--sat-border);
+  border-radius: 6px;
+  color: var(--sat-text);
+  padding: 9px 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+  outline: none;
+  display: block;
+}
+.sat-input:focus          { border-color: var(--sat-accent); }
+.sat-input::placeholder   { color: var(--sat-dim); }
+.sat-input:disabled       { opacity: 0.5; cursor: not-allowed; }
+
+.sat-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sat-dim);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.sat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  font-family: 'IBM Plex Sans', sans-serif;
+  white-space: nowrap;
+}
+.sat-btn:disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+
+.sat-btn-primary          { background: var(--sat-accent); color: #07080d; }
+.sat-btn-primary:hover    { background: var(--sat-accentD); }
+.sat-btn-ghost            { background: transparent; border: 1px solid var(--sat-border); color: var(--sat-text); }
+.sat-btn-ghost:hover      { border-color: var(--sat-accent); color: var(--sat-accent); }
+.sat-btn-danger           { background: var(--sat-danger); color: #fff; }
+.sat-btn-danger:hover     { opacity: 0.85; }
+.sat-btn-warn             { background: var(--sat-warn); color: #07080d; }
+.sat-btn-warn:hover       { opacity: 0.85; }
+
+.sat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.04em;
+}
+
+.glow-accent  { box-shadow: 0 0 20px #00e5a030; }
+.glow-warn    { box-shadow: 0 0 20px #f59e0b30; }
+
+/* ── Animations ──────────────────────────────── */
+@keyframes fadeIn  { from { opacity: 0 }                                 to { opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(10px); opacity: 0 }    to { transform: translateY(0); opacity: 1 } }
+@keyframes slideIn { from { transform: translateX(-100%) }               to { transform: translateX(0) } }
+
+.animate-fade-in  { animation: fadeIn  0.25s ease-in-out; }
+.animate-slide-up { animation: slideUp 0.25s ease-out; }
+.animate-slide-in { animation: slideIn 0.25s ease-out; }
