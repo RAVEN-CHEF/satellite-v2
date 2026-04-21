@@ -233,3 +233,55 @@ create index if not exists idx_horarios_week    on public.horarios(week_start);
 create index if not exists idx_horarios_user    on public.horarios(user_id);
 create index if not exists idx_recetas_cat      on public.recetas(categoria);
 create index if not exists idx_profiles_role    on public.profiles(role);
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- NUEVAS TABLAS v2.1
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- VALIDATION LINKS (links de firma de un solo uso, solo Raven)
+CREATE TABLE IF NOT EXISTS public.validation_links (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  token       text UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(24),'hex'),
+  titulo      text NOT NULL,
+  descripcion text,
+  contenido   text,
+  expires_at  timestamptz NOT NULL,
+  created_by  uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  used        boolean NOT NULL DEFAULT false,
+  signed_by   text,
+  signed_at   timestamptz,
+  firma_image text,
+  created_at  timestamptz DEFAULT now()
+);
+
+-- PEDIDOS
+CREATE TABLE IF NOT EXISTS public.pedidos (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  items       jsonb NOT NULL DEFAULT '[]',
+  notas       text,
+  created_by  uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at  timestamptz DEFAULT now()
+);
+
+-- RLS
+ALTER TABLE public.validation_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pedidos          ENABLE ROW LEVEL SECURITY;
+
+-- Validation links: solo admin/raven leen, público puede firmar por token
+DROP POLICY IF EXISTS "vlinks_admin"  ON public.validation_links;
+DROP POLICY IF EXISTS "vlinks_public" ON public.validation_links;
+CREATE POLICY "vlinks_admin"  ON public.validation_links FOR ALL    USING (get_my_role() IN ('admin','raven'));
+CREATE POLICY "vlinks_public" ON public.validation_links FOR SELECT USING (true);
+CREATE POLICY "vlinks_sign"   ON public.validation_links FOR UPDATE USING (true);
+
+-- Pedidos: solo admin/raven
+DROP POLICY IF EXISTS "pedidos_admin" ON public.pedidos;
+CREATE POLICY "pedidos_admin" ON public.pedidos FOR ALL USING (get_my_role() IN ('admin','raven'));
+
+-- Índices
+CREATE INDEX IF NOT EXISTS idx_vlinks_token ON public.validation_links(token);
+CREATE INDEX IF NOT EXISTS idx_pedidos_date ON public.pedidos(created_at DESC);
+
+-- Storage bucket para fotos (ejecutar en Supabase Dashboard > Storage)
+-- Crear bucket: satellite-media (public)

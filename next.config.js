@@ -10,6 +10,10 @@ const nextConfig = {
       },
     ],
   },
+  // xlsx necesita estos externals en edge
+  experimental: {
+    serverComponentsExternalPackages: ['xlsx'],
+  },
 }
 
 module.exports = nextConfig
