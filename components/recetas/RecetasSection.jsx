@@ -85,10 +85,10 @@ export default function RecetasSection({ userRole = 'empleado' }) {
     const ext  = file.name.split('.').pop()
     const path = `recetario/${tipo}/${id}.${ext}`
     const { error: upErr } = await supabase.storage
-      .from('satellite-media')
+      .from('recetas')
       .upload(path, file, { contentType: file.type, upsert: true })
     if (upErr) { alert('Error al subir foto: ' + upErr.message); return null }
-    const { data } = supabase.storage.from('satellite-media').getPublicUrl(path)
+    const { data } = supabase.storage.from('recetas').getPublicUrl(path)
     return data.publicUrl
   }
 
