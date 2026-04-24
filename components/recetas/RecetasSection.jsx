@@ -74,7 +74,20 @@ function loadData() {
 }
 
 function saveData(d) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)) } catch {}
+  try {
+    // Save without foto data to check size, then with compressed fotos
+    const json = JSON.stringify(d)
+    localStorage.setItem(STORAGE_KEY, json)
+  } catch(e) {
+    // If quota exceeded, save without fotos
+    try {
+      const slim = { ...d,
+        platillos: d.platillos.map(p => ({ ...p, foto: p.foto && p.foto.length > 50000 ? null : p.foto })),
+        subrecetas: d.subrecetas.map(s => ({ ...s, foto: s.foto && s.foto.length > 50000 ? null : s.foto }))
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(slim))
+    } catch {}
+  }
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2) }
@@ -126,11 +139,23 @@ export default function RecetasSection({ userRole = 'empleado' }) {
     if (!file) return
     const reader = new FileReader()
     reader.onload = ev => {
-      if (tipo === 'platillo') {
-        persist({ ...data, platillos: data.platillos.map(p => p.id === id ? { ...p, foto: ev.target.result } : p) })
-      } else {
-        persist({ ...data, subrecetas: data.subrecetas.map(s => s.id === id ? { ...s, foto: ev.target.result } : s) })
+      // Compress image to max 600px width before saving
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 600
+        const ratio = Math.min(MAX / img.width, MAX / img.height, 1)
+        const canvas = document.createElement('canvas')
+        canvas.width  = Math.round(img.width  * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+        const compressed = canvas.toDataURL('image/jpeg', 0.7)
+        if (tipo === 'platillo') {
+          persist({ ...data, platillos: data.platillos.map(p => p.id === id ? { ...p, foto: compressed } : p) })
+        } else {
+          persist({ ...data, subrecetas: data.subrecetas.map(s => s.id === id ? { ...s, foto: compressed } : s) })
+        }
       }
+      img.src = ev.target.result
     }
     reader.readAsDataURL(file)
   }
@@ -287,10 +312,10 @@ export default function RecetasSection({ userRole = 'empleado' }) {
           )}
         </div>
 
-        <div style={{ display:'grid', gridTemplateColumns:'minmax(200px,1fr) 2fr', gap:20, alignItems:'start' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))', gap:20, alignItems:'start' }}>
           {/* Foto */}
           <div>
-            <div style={{ background:'#0f1117', border:'1px solid #1c2030', borderRadius:10, overflow:'hidden', aspectRatio:'1', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:8 }}>
+            <div style={{ background:'#0f1117', border:'1px solid #1c2030', borderRadius:10, overflow:'hidden', aspectRatio:'1/1', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:8, maxWidth:300, width:'100%' }}>
               {p.foto
                 ? <img src={p.foto} alt={p.nombre} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 : <span style={{ fontSize:40 }}>🍱</span>
